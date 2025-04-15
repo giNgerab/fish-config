@@ -1,13 +1,3 @@
-#function cf
-#    if not test -e $argv[1]
-#        echo "Error: File does not exist."
-#        return 1
-#    end
-#    echo -n "file://" (readlink -e $argv[1]) | wl-copy -t text/uri-list
-#end
-#complete -c cf -e
-#complete -c cf -F
-
 function cf
     if not test -e $argv[1]
         echo "Error: File does not exist."
