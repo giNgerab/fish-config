@@ -1,6 +1,5 @@
 complete -c pandla -e
 complete -c pandla -r -F
-
 function pandla
     if test (count $argv) -lt 1
         echo "Usage: pandla yourfile.md [pandoc flags]"
