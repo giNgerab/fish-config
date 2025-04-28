@@ -1,5 +1,7 @@
+complete -c cf -e
+complete -c cf -r -F
 function cf
-    if not test -e $argv[1]
+    if not test -e $argv[1]; or test -z "$argv[1]"
         echo "Error: File does not exist."
         return 1
     end
@@ -7,5 +9,3 @@ function cf
     set file_uri (string replace -r ' ' '%20' "file://$file_path")
     echo -n $file_uri | wl-copy -t text/uri-list
 end
-complete -c cf -e
-complete -c cf -F
