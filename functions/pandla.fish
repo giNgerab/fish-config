@@ -1,28 +1,33 @@
 complete -c pandla -e
 complete -c pandla -r -F
+
 function pandla
+
+    function on_exit --on-signal SIGINT --on-signal SIGTERM --on-event IMDONE
+        printf "Cleanup\n"
+        printf "Killing children of %d: %s\n" \
+            $fish_pid \
+            (pgrep -P $fish_pid | string join ', ')
+        pkill -P $fish_pid
+        if test -n "$TEMPF"
+            rm -rf -- "$TEMPF" && printf "Removed auxdir (%s)\n" $TEMPF
+        end
+    end
+
+    set -l TEMPF (mktemp -d)
+
     if test (count $argv) -lt 1
-        echo "Usage: pandla yourfile.md [pandoc flags]"
+        echo "Usage: pandla yourfile.latex [latexmk flags]"
         return 1
     end
 
-    set mdfile $argv[1]
-    set flags $argv[2..-1]
-    set basename (string replace -r '\.md$' '' (basename -- $mdfile))
+    set -l lxfile $argv[1]
+    set -e argv[1]  # remove the input file from remaining args
+    set -l outdir (dirname -- "$lxfile")
 
-    # Convert .md to .latex
-    pandoc $mdfile -o "$basename.latex" $flags
-    if test $status -ne 0
-        echo "Pandoc failed."
-        return 1
-    end
+    # Compile to PDF: PDF in same directory as source, aux in temp
+    latexmk -pvc -ps -pdf "$lxfile" -auxdir="$TEMPF" -outdir="$outdir" $argv
 
-    # Compile to PDF
-    latexmk -pdf -silent "$basename.latex" && latexmk -c "$basename.latex"
-    if test $status -ne 0
-        echo "Latexmk failed."
-        return 1
-    end
+    emit IMDONE
 
-    rm "$basename.latex"
 end
